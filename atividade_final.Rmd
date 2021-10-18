@@ -5,26 +5,115 @@ date: "17/10/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+Explicação sobre a espécie q estou utilizando Senegalia polyphylla
+
+
+Carregando os pacotes que serão utilizados:
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(rgbif)
+library(magrittr)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+S.polyphylla_gbif <- occ_data(scientificName = "Senegalia polyphylla", 
+                      hasCoordinate = TRUE,
+                      hasGeospatialIssue=FALSE)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+dim(S.polyphylla_gbif$data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+S.polyphylla_gbif$data %>% names
+```
+
+
+```{r}
+S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
+  dplyr::select(scientificName, acceptedScientificName, decimalLatitude, decimalLongitude,
+                issues,elevation, basisOfRecord, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, locality, stateProvince,county, habitat) 
+
+S.polyphylla_gbif1
+```
+
+Precisamos checar os problemas que são suspeitos de conter erros mais aparentes. Por se tratar de uma espécie arbórea, vamos inicialmente checar o habitat.
+
+
+
+```{r}
+S.polyphylla_gbif1 %>%
+  distinct(habitat) %>%
+  pull()
+```
+
+```{r}
+M.nigra_gbif1 %>%
+  group_by(habitat) %>% 
+  summarise(occ = length(scientificName)) %>% 
+  ggplot(aes(occ, y=habitat)) +
+  geom_bar(stat = 'identity') 
+```
+
+Carregando mais pacotes para a atividade
+```{r}
+library(ggmap)
+library(maps)
+library(mapdata)
+library(sf)
+```
+
+
+
+
+MAPA DAS OCORRÊNCIAS
+
+
+usando as funções q estão na parte OBIS da atividade
+
+```{r}
+library(CoordinateCleaner)
+#library(obistools)
+#library(scrubr)
+library(biogeo)
+```
+
+
+APLICANDO FLAG OUTLIER
+
+
+```{r}
+ marcados <- M.nigra_gbif$data %>% 
+  data.frame() %>% 
+  dplyr::select(scientificName, decimalLongitude, decimalLatitude, datasetName) %>% 
+  distinct() %>% 
+  flag_outlier(., "Metrodorea nigra A.St.-Hil.")
+
+```
+
+
+
+```{r}
+# mapa
+ggplot() +
+  geom_polygon(data = brasil, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = marcados, 
+             aes(x = decimalLongitude, y = decimalLatitude, 
+                 color = flag)) +
+  theme(legend.title = element_blank()) +
+  labs(x = "longitude", y = "latitude", 
+       title = expression(italic("Metrodorea nigra")))
+```
+
+
+
+
+
+
