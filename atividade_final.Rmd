@@ -37,14 +37,19 @@ S.polyphylla_gbif$data %>% names
 S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
   dplyr::select(scientificName, acceptedScientificName, decimalLatitude, decimalLongitude,
                 issues,elevation, basisOfRecord, occurrenceStatus, rightsHolder, 
-                datasetName, recordedBy, locality, stateProvince,county, habitat) 
+                datasetName, recordedBy, country, locality, stateProvince,county, habitat) 
 
 S.polyphylla_gbif1
 ```
 
+sadsdasd utilizamos a função abaixo para checar os níveis das variáveis 
+
+```{r}
+lapply(S.polyphylla_gbif1, unique)
+
+```
+
 Precisamos checar os problemas que são suspeitos de conter erros mais aparentes. Por se tratar de uma espécie arbórea, vamos inicialmente checar o habitat.
-
-
 
 ```{r}
 S.polyphylla_gbif1 %>%
@@ -52,23 +57,46 @@ S.polyphylla_gbif1 %>%
   pull()
 ```
 
-```{r}
-M.nigra_gbif1 %>%
+```{r Habitat - checagem das variáveis}
+S.polyphylla_gbif1 %>%
   group_by(habitat) %>% 
   summarise(occ = length(scientificName)) %>% 
   ggplot(aes(occ, y=habitat)) +
   geom_bar(stat = 'identity') 
 ```
 
-Carregando mais pacotes para a atividade
-```{r}
+Agora serão carregados novos pacotes para a criação dos mapas. Os pacotes são: `ggmap`, `maps`, `mapdata` e `sf`.
+
+
+```{r pacotes mapas, warning=FALSE, message=FALSE}
 library(ggmap)
 library(maps)
 library(mapdata)
 library(sf)
 ```
 
+```{r determinando a região}
 
+mapa <- map_data('world',regions = c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"))
+
+sf <- st_as_sf (mapa, coords = c("long", "lat"), crs = 4326) %>%
+  group_by(region, subregion) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")  %>%
+  group_by(region) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("MULTIPOLYGON")
+```
+
+```{r plotando os pontos}
+
+ggplot( data = sf) + 
+  geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
+  coord_sf() +
+  theme_classic() +
+  geom_point(data = S.polyphylla_gbif1, aes(x = decimalLongitude, y = decimalLatitude), color = "red") +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Senegalia polyphylla")))
+```
 
 
 MAPA DAS OCORRÊNCIAS
@@ -78,26 +106,34 @@ usando as funções q estão na parte OBIS da atividade
 
 ```{r}
 library(CoordinateCleaner)
-#library(obistools)
-#library(scrubr)
+library(obistools)
+library(scrubr)
 library(biogeo)
 ```
 
 
-APLICANDO FLAG OUTLIER
 
 
+
+Para isso utilizamentos a função `flag outlier`, do [prof. Cesar](https://github.com/cammcordeiro/ciencia_colab/blob/main/functions/aux_functions.R).
+
+```{r Função Flag outlier}
+source("C:/R/ciencolab_banco-dados/flag_outlier.R")
+```
+
+
+Selecionando as variáveis para aplicarmos a função `flag outlier`.
 ```{r}
- marcados <- M.nigra_gbif$data %>% 
+ marcados <- S.polyphylla_gbif$data %>% 
   data.frame() %>% 
   dplyr::select(scientificName, decimalLongitude, decimalLatitude, datasetName) %>% 
   distinct() %>% 
-  flag_outlier(., "Metrodorea nigra A.St.-Hil.")
+  flag_outlier(., "Senegalia polyphylla (DC.) Britton & Rose")
 
 ```
 
 
-
+Criando o mapa com a função `flag outlier`.
 ```{r}
 # mapa
 ggplot() +
