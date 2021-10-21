@@ -2,13 +2,25 @@
 title: "Atividade Final"
 author: "Nilson Berriel"
 date: "17/10/2021"
-output: html_document
+output:
+  html_document:
+    theme:
+      bg: "#121212"
+      fg: "#E4E4E4"
+      base_font:
+        google: "Prompt"
 ---
 
-Explicação sobre a espécie q estou utilizando Senegalia polyphylla
+A espécie selecionada para esta atividade foi <font color = green>*Senegalia polyphylla* (DC.) Britton & Rose</font>. Uma árvore pertencente a família Leguminosae, pertencente ao Grupo Ecológico das secundárias iniciais[^1], que pode chegar aos 20 m de altura e possuir um DAP (Diâmetro à Altura do Peito) de 30-60 cm.[^2]
+Esta é uma espécie decídua ... 
+
+[^1]: citação abreu et al. 2014
+[^2]: lorenzi - livro árvores do brasil
 
 
-Carregando os pacotes que serão utilizados:
+A seguir veremos como acessar os dados de distribuição da espécie selecionada, a partir dos seu registros no banco de dados do GBIF.
+
+Começaremos carregando os pacotes que serão utilizados: `tidyverse`, `rgbif` e `magrittr`
 
 ```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -16,22 +28,21 @@ library(rgbif)
 library(magrittr)
 ```
 
+Para iniciar a seleção dos dados da espécie de interesse, utilizaremos a função `occ_data` baixarmos os dados sobre *Senegalia polyphylla* do banco de dados do GBIF.
+
 ```{r}
 S.polyphylla_gbif <- occ_data(scientificName = "Senegalia polyphylla", 
                       hasCoordinate = TRUE,
                       hasGeospatialIssue=FALSE)
 ```
 
-
 ```{r}
 dim(S.polyphylla_gbif$data)
 ```
 
-
 ```{r}
 S.polyphylla_gbif$data %>% names
 ```
-
 
 ```{r}
 S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
@@ -42,7 +53,7 @@ S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
 S.polyphylla_gbif1
 ```
 
-sadsdasd utilizamos a função abaixo para checar os níveis das variáveis 
+sadsdasd utilizamos a função abaixo para checar os níveis das variáveis
 
 ```{r}
 lapply(S.polyphylla_gbif1, unique)
@@ -66,7 +77,6 @@ S.polyphylla_gbif1 %>%
 ```
 
 Agora serão carregados novos pacotes para a criação dos mapas. Os pacotes são: `ggmap`, `maps`, `mapdata` e `sf`.
-
 
 ```{r pacotes mapas, warning=FALSE, message=FALSE}
 library(ggmap)
@@ -98,9 +108,28 @@ ggplot( data = sf) +
   labs(x = "longitude", y = "latitude", title = expression(italic("Senegalia polyphylla")))
 ```
 
+Podemos filtrar as ocorrências pelos países:
+
+```{r plotando os pontos por países}
+ggplot( data = sf) + 
+  geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
+  coord_sf() +
+  theme_classic() +
+  geom_point(data = S.polyphylla_gbif1, aes(x = decimalLongitude, y = decimalLatitude, color = country)) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Senegalia polyphylla")))
+```
+
+```{r}
+ggplot( data = sf) + 
+  geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
+  geom_sf( data = sf[ sf$region %in% c("Brazil","Bolivia","Ecuador", "Colombia", "El Salvador", "Mexico"), ], fill = "forestgreen" )+
+  coord_sf() +
+  theme_classic() +
+  geom_point(data = S.polyphylla_gbif1, aes(x = decimalLongitude, y = decimalLatitude, color = country)) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Senegalia polyphylla")))
+```
 
 MAPA DAS OCORRÊNCIAS
-
 
 usando as funções q estão na parte OBIS da atividade
 
@@ -111,19 +140,15 @@ library(scrubr)
 library(biogeo)
 ```
 
-
-
-
-
 Para isso utilizamentos a função `flag outlier`, do [prof. Cesar](https://github.com/cammcordeiro/ciencia_colab/blob/main/functions/aux_functions.R).
 
 ```{r Função Flag outlier}
 source("C:/R/ciencolab_banco-dados/flag_outlier.R")
 ```
 
-
 Selecionando as variáveis para aplicarmos a função `flag outlier`.
-```{r}
+
+```{r , results='hide', message=FALSE}
  marcados <- S.polyphylla_gbif$data %>% 
   data.frame() %>% 
   dplyr::select(scientificName, decimalLongitude, decimalLatitude, datasetName) %>% 
@@ -132,10 +157,9 @@ Selecionando as variáveis para aplicarmos a função `flag outlier`.
 
 ```
 
-
 Criando o mapa com a função `flag outlier`.
-```{r}
-# mapa
+
+``` {#r}
 ggplot() +
   geom_polygon(data = brasil, aes(x = long, y = lat, group = group)) +
   coord_fixed() +
@@ -148,8 +172,74 @@ ggplot() +
        title = expression(italic("Metrodorea nigra")))
 ```
 
+###Leaflet
 
+```{r carregar pacote leaflet}
+library(leaflet)
+```
 
+```{r}
+##############
+#talvez não precise usar
+#############
 
+# ocorrencias
+corvus_gbif <- occ_data(scientificName = "Corvus", 
+                      hasCoordinate = TRUE,
+                      hasGeospatialIssue = FALSE)
+# checar issues
+issues_gbif <- corvus_gbif$data$issues %>% 
+  unique() %>% 
+  strsplit(., "[,]") %>% 
+  unlist()
 
+gbif_issues() %>% 
+  data.frame() %>% 
+  filter(code %in% issues_gbif)
+```
 
+```{r}
+# selecionar variaveis
+corvus <- corvus_gbif$data %>%
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude) %>% 
+  distinct()
+
+```
+
+Depois de carregar os dados, basta criar um mapa seguindo a sintaxe abaixo. Nela, indicamos um data.frame com dados de coordenadas geográficas em graus decimais. A função addTiles é responsável por indicar o tipo de mapa base utilizado. Aqui vamos utilizar o fundo padrão, mas para mais opções acesse este tutorial. Vamos plotar o mapa e dar uma conferida nas ocorrências.
+
+```{r}
+library(leaflet)
+
+# conferir no mapa
+corvus %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(~decimalLongitude,
+             ~decimalLatitude)
+```
+
+Podemos também dar uma incrementada mudando o tipo de marcador e incluir diferenças de acordo com os níveis de um fator, neste caso datasetName. Também é importante adicionar uma legenda ao mapa para indicar o significado das cores dos marcadores. Novamente, acesse o tutorial indicado para aprender como explorar ainda mais os recursos desta ferramenta. br>
+
+```{r}
+
+pal <- colorFactor(palette = "viridis", domain = unique(corvus$scientificName))
+
+corvus %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addCircleMarkers(~decimalLongitude,
+                   ~decimalLatitude,
+                   radius = 5,
+                   label = ~as.character(scientificName),
+                   color = ~pal(corvus$scientificName),
+                   stroke = FALSE, fillOpacity = 0.5) %>% 
+  addLegend('bottomright', 
+            colors = unique(pal(corvus$scientificName)), 
+            labels = unique(corvus$scientificName),
+            title = 'Espécie',
+            opacity = 0.5)
+
+```
+
+#Plotly
