@@ -11,40 +11,43 @@ output:
         google: "Prompt"
 ---
 
-A espécie selecionada para esta atividade foi <font color = green>*Senegalia polyphylla* (DC.) Britton & Rose</font>. Uma árvore pertencente a família Leguminosae, pertencente ao Grupo Ecológico das secundárias iniciais[^1], que pode chegar aos 20 m de altura e possuir um DAP (Diâmetro à Altura do Peito) de 30-60 cm.[^2]
-Esta é uma espécie decídua ... 
+A espécie selecionada para esta atividade foi <font color = green>*Senegalia polyphylla* (DC.) Britton & Rose</font>, popularmente conhecida como monjolo, acácia, angico, maricá e muitos outros nomes que irão variar de acordo com sua área de ocorrência no Brasil. [^1] [^2]  É uma árvore pertencente a família Leguminosae, e ao Grupo Ecológico das secundárias iniciais [^3], que pode atingir os 15-20 m de altura e possuir um DAP (Diâmetro à Altura do Peito) de 30-60 cm. [^2] É támbém uma espécie de interesse econômico, pois além do uso madereiro, também está associada a projetos de restauração ambiental, reflorestamentos e arborização urbana. [^2]
 
-[^1]: citação abreu et al. 2014
-[^2]: lorenzi - livro árvores do brasil
+Esta é uma espécie decídua, que perde suas folhas nos períodos de seca ou de inverno, não é endemica do Brasil, mas ocorre noa principais dominíos fitogerográficos do país (Amazônia, Caatinga, Cerrado, Mata Atlântica, Pantanal). Sua ocorrencia se dá por muitos países da América Central e Sul, e incluindo o México na América do Norte. [^1] [^4]
+
+![Distribuição da *Senegalia polyphylla*[^1]](C:/R/ciencolab_banco-dados/cienc.colab_final/mapa_ocorrencia_s.polyphylla_brasil.jpg)
 
 
-A seguir veremos como acessar os dados de distribuição da espécie selecionada, a partir dos seu registros no banco de dados do GBIF.
+[^1]: Terra, V.; Morim, M.P. 2020. Senegalia in **Flora do Brasil 2020**. Jardim Botânico do Rio de Janeiro.Disponível em: <http://reflora.jbrj.gov.br/reflora/floradobrasil/FB101015>. Acesso em: 18 out. 2021
+[^2]: Lorenzi, H. 2016. **Árvores brasileiras: manual de identificação e cultivo de plantas arbóreas nativas do Brasil**. Vol. 1. 7ª ed. São Paulo: Instituto Plantarum de Estudos da Flora.
+[^3]: Abreu, K. M. P.; Braga, J. M. A.; Nascimento, M. T. 2014. Tree species diversity of coastal lowland semideciduous forest fragments in northern Rio de Janeiro State, Brazil. **Bioscience Journal**, 30(5).
+[^4]: Barros, M. J. F.;Morim, M. P. 2014. Senegalia (Leguminosae, Mimosoideae) from the Atlantic Domain, Brazil. **Systematic Botany**, 39(2), 452-477.
 
-Começaremos carregando os pacotes que serão utilizados: `tidyverse`, `rgbif` e `magrittr`
+A seguir veremos como acessar os dados de distribuição da *Senegalia polyphylla*, a partir dos registros no banco de dados do GBIF.
 
-```{r, warning=FALSE, message=FALSE}
+Começaremos carregando os seguintes pacotes: `tidyverse`, `rgbif` e `magrittr`.
+
+```{r carregando pacotes I, echo=false, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(rgbif)
 library(magrittr)
 ```
 
-Para iniciar a seleção dos dados da espécie de interesse, utilizaremos a função `occ_data` baixarmos os dados sobre *Senegalia polyphylla* do banco de dados do GBIF.
+Iremos selecionar os dados utilizaremos a função `occ_data`, do pacote `rgbif`. Neste ponto faremos a aquisição dos dados disponíveis para *Senegalia polyphylla* no banco de dados do GBIF.
 
-```{r}
+```{r Aquisição dos dados}
 S.polyphylla_gbif <- occ_data(scientificName = "Senegalia polyphylla", 
                       hasCoordinate = TRUE,
                       hasGeospatialIssue=FALSE)
 ```
 
-```{r}
-dim(S.polyphylla_gbif$data)
-```
-
-```{r}
+Abaixo iremos identificar as variáveis disponíveis para *S. polyphylla*.
+```{r Visualizar variáveis de interesse}
 S.polyphylla_gbif$data %>% names
 ```
 
-```{r}
+Após identificar as variáveis disponíveis, vamos criar uma seleção das variáveis que nos interessam.
+```{r selecionando variáveis }
 S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
   dplyr::select(scientificName, acceptedScientificName, decimalLatitude, decimalLongitude,
                 issues,elevation, basisOfRecord, occurrenceStatus, rightsHolder, 
@@ -53,28 +56,17 @@ S.polyphylla_gbif1 <- S.polyphylla_gbif$data %>%
 S.polyphylla_gbif1
 ```
 
-sadsdasd utilizamos a função abaixo para checar os níveis das variáveis
+
+Utilizandos a função `lapply` podemos checar os níveis das variáveis que tivemos maior interesse.
 
 ```{r}
 lapply(S.polyphylla_gbif1, unique)
 
 ```
 
-Precisamos checar os problemas que são suspeitos de conter erros mais aparentes. Por se tratar de uma espécie arbórea, vamos inicialmente checar o habitat.
+A princípio não encontramos níveis suspeitos que possuíssem erros aparentes.
 
-```{r}
-S.polyphylla_gbif1 %>%
-  distinct(habitat) %>%
-  pull()
-```
 
-```{r Habitat - checagem das variáveis}
-S.polyphylla_gbif1 %>%
-  group_by(habitat) %>% 
-  summarise(occ = length(scientificName)) %>% 
-  ggplot(aes(occ, y=habitat)) +
-  geom_bar(stat = 'identity') 
-```
 
 Agora serão carregados novos pacotes para a criação dos mapas. Os pacotes são: `ggmap`, `maps`, `mapdata` e `sf`.
 
