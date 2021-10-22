@@ -220,7 +220,7 @@ plotly_s.polyphylla <- s.polyphylla %>%
 ```
 
 E agora vamos plotar o gráfico mais interativo onde podemos checar a ocorrência de *S. polyphylla* em relação a elevação do terreno.
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE }
 ggplotly(plotly_s.polyphylla)
 ```
 
