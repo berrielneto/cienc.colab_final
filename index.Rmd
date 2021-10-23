@@ -15,8 +15,14 @@ A espécie selecionada para esta atividade foi <font color = green>*Senegalia po
 
 Esta é uma espécie decídua, que perde suas folhas nos períodos de seca ou de inverno, não é endemica do Brasil, mas ocorre noa principais dominíos fitogerográficos do país (Amazônia, Caatinga, Cerrado, Mata Atlântica, Pantanal). Sua ocorrencia se dá por muitos países da América Central e Sul, e incluindo o México na América do Norte. [^1] [^4]
 
-![Distribuição da *Senegalia polyphylla*[^1]](C:/R/ciencolab_banco-dados/cienc.colab_final/mapa_ocorrencia_s.polyphylla_brasil.jpg)
+<center><img src= "C:/R/ciencolab_banco-dados/cienc.colab_final/mapa_ocorrencia_s.polyphylla_brasil.jpg" style= "width:40%"></center>
+<center>Distribuição de *Senegalia polyphylla* no Brasil[^1]</center>
 
+Temos aqui um detalhamento de *Senegalia polyphylla* fornecido no livro de Harri Lorenzi [^2]:
+
+<center><img src= "C:/R/ciencolab_banco-dados/cienc.colab_final/img_livro_lorenzi.jpeg" style= "width:40%"></center>
+
+***
 
 [^1]: Terra, V.; Morim, M.P. 2020. Senegalia in **Flora do Brasil 2020**. Jardim Botânico do Rio de Janeiro.Disponível em: <http://reflora.jbrj.gov.br/reflora/floradobrasil/FB101015>. Acesso em: 18 out. 2021
 [^2]: Lorenzi, H. 2016. **Árvores brasileiras: manual de identificação e cultivo de plantas arbóreas nativas do Brasil**. Vol. 1. 7ª ed. São Paulo: Instituto Plantarum de Estudos da Flora.
@@ -93,7 +99,7 @@ sf <- st_as_sf (mapa, coords = c("long", "lat"), crs = 4326) %>%
 
 Agora que carregamos os países que temos interesse em utilizar, podemos plotar um mapa com os pontos de registro para *S. polyphylla* no GBIF.
 
-```{r plotando os pontos}
+```{r plotando os pontos, fig.align = "center"}
 
 ggplot( data = sf) + 
   geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
@@ -105,7 +111,7 @@ ggplot( data = sf) +
 
 Para melhorar a visualização do resultado, podemos destacar os registros de ocorrências pelos países.
 
-```{r plotando os pontos por países}
+```{r plotando os pontos por países, fig.align = "center"}
 ggplot( data = sf) + 
   geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
   coord_sf() +
@@ -115,7 +121,7 @@ ggplot( data = sf) +
 ```
 
 Ou ainda, também podemos destacar esses países para melhorar a identificação.  
-```{r}
+```{r , fig.align = "center"}
 ggplot( data = sf) + 
   geom_sf( data = sf[ sf$region %in% c("Brazil", "Uruguay", "Argentina", "French Guiana", "Suriname", "Colombia", "Venezuela", "Bolivia", "Ecuador", "Chile", "Paraguay", "Peru", "Guyana", "Panama", "Costa Rica", "Nicaragua", "Honduras", "El Salvador", "Belize", "Guatemala", "Mexico", "Trinidad and Tobago", "Caribe", "Puerto Rico", "Dominican Republic", "Haiti", "Jamaica", "Cuba", "Bahamas", "Antiles", "Dominica"), ], alpha = 0 ) +
   geom_sf( data = sf[ sf$region %in% c("Brazil","Bolivia","Ecuador", "Colombia", "El Salvador", "Mexico"), ], fill = "grey" )+
@@ -140,7 +146,7 @@ library(leaflet)
 ```
 
 Podemos criar um mapa base utilizando somente as coordenadas geográficas (em graus decimais) dos pontos de ocorrência da *Senegalia polyphylla*.
-```{r}
+```{r , fig.align = "center"}
 s.polyphylla %>% 
   leaflet() %>% 
   addTiles() %>% 
@@ -154,7 +160,7 @@ Podemos incrementar o mapa utilizando *S. polyphylla* e seus sinônimos como mar
 library(RColorBrewer)
 ```
 
-```{r}
+```{r , fig.align = "center"}
 
 pal <- colorFactor(palette = "Set1", domain = unique(s.polyphylla$scientificName))
 
@@ -187,7 +193,7 @@ s.polyphylla <- S.polyphylla_gbif$data %>%
 
 Agora, vamos plotar o gráfico com essas informações.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, fig.align = "center"}
 s.polyphylla %>% 
   mutate(elev = round(elevation)) %>% 
   group_by(elev, scientificName) %>%
@@ -220,7 +226,7 @@ plotly_s.polyphylla <- s.polyphylla %>%
 ```
 
 E agora vamos plotar o gráfico mais interativo onde podemos checar a ocorrência de *S. polyphylla* em relação a elevação do terreno.
-```{r, message=FALSE, warning=FALSE }
+```{r, message=FALSE, warning=FALSE, fig.align = "center"}
 ggplotly(plotly_s.polyphylla)
 ```
 
